@@ -115,6 +115,7 @@ Followed by: flow simulation trace · assumption stress test · top 5 prioritize
 | **Recovery Chain** | Does each step of the recovery mechanism have an explicit trigger, or does it rely on AI remembering? |
 | **Continuity Design** | When crossing sessions, can work continue via handoff and state files? |
 | **Degradation Curve** | Is quality degradation gradual (tiered lite/full) or a sudden cliff? |
+| **Parallel Context Isolation** | In multi-agent scenarios, does each agent have an isolated context window? Does the orchestrator accumulate unbounded context as it collects worker results, or does it only receive summaries? |
 
 ### 2. Context Efficiency — Is what's in context actually what's needed right now?
 
@@ -165,6 +166,7 @@ Followed by: flow simulation trace · assumption stress test · top 5 prioritize
 | **Graceful Degradation** | If one component fails, do others continue working? |
 | **Error Isolation** | Does one hook erroring interrupt the entire session? |
 | **State Consistency** | How many sources of truth exist, and can they drift out of sync? |
+| **Concurrent Write Safety** | If multiple agents attempt to modify shared state (e.g. SPEC.md) simultaneously, is there isolation or a defined merge protocol? |
 | **Empty State** | Does the system work on a fresh repo with nothing initialized? |
 | **Mid-Session Change** | If a human changes code or requirements mid-session, does the system adapt? |
 | **Repo as Record** | Is all knowledge the AI needs in version-controlled files, not external tools? |

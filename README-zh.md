@@ -116,6 +116,7 @@ curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL.md
 | **恢復鏈路** | 恢復機制的每一步有沒有明確觸發器，還是靠 AI 記得執行 |
 | **連續性設計** | 跨 session 時，工作能不能透過 handoff 和狀態檔銜接 |
 | **退化曲線** | 品質退化是漸進的（分級機制）還是懸崖式的 |
+| **並行 Context 隔離** | 多 agent 場景下，每個 agent 有獨立的 context window 嗎？Orchestrator 收集 worker 結果時，會不會無限累積 context，還是只接收摘要？ |
 
 ### 2. Context 效率 — 現在 context 裡的，是 AI 當下需要的嗎？
 
@@ -166,6 +167,7 @@ curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL.md
 | **優雅降級** | 一個元件壞了，其他還能正常運作嗎 |
 | **錯誤隔離** | 一個 hook 報錯會不會中斷整個 session |
 | **狀態一致性** | 有幾個 source of truth，它們會不會漂移 |
+| **並行寫入安全** | 多個 agent 同時嘗試修改共享狀態（如 SPEC.md）時，有沒有隔離機制或定義好的 merge 協議？ |
 | **空白狀態** | 全新 repo、沒有 SPEC、沒有初始化時，系統能正常工作嗎 |
 | **中途變更** | 人類中途改了 code 或需求，系統能偵測和適應嗎 |
 | **Repo 即記錄** | AI 做決策需要的所有知識都在版控的檔案裡嗎 |
