@@ -245,6 +245,7 @@ Evaluate the design's impact on session longevity:
 | Criteria | Question | Score |
 |----------|----------|-------|
 | **Context Budget** | How much context do system instructions occupy? How much is left for actual work? | always-loaded bytes / model context window. <5% = A, 5-10% = B, 10-20% = C, >20% = F |
+| **Active Ceiling** | Does the system keep active context below the quality degradation threshold during long tasks? | has compaction/archiving that prevents context from filling past ~40% = A, grows linearly but slowly = C, no mechanism = F |
 | **Growth Bound** | Does injected context grow without bound as work progresses? | has upper bound mechanism (cache/archive/compact) = A, linear growth but slow = C, unbounded growth = F |
 | **Recovery Design** | After context reset, how much state can the system recover? | full reset + structured handoff = A, compact preserves partial = B, no mechanism = F |
 | **Recovery Chain** | Does each step of the recovery mechanism have a trigger chain? | each step has explicit trigger = A, relies on AI remembering = C, broken chain = F |
@@ -261,6 +262,8 @@ Model context windows (input):
 
 Formula: `context_budget_score = always_loaded_tokens / effective_context_window`
 
+**Active Ceiling note**: Empirically, output quality degrades when active context exceeds ~40% of window size regardless of fixed overhead. A system with 5% always-loaded overhead but no compaction will still hit the Dumb Zone by mid-session on complex tasks. Evaluate whether the system has mechanisms (archiving completed work, compacting completed feature groups, structured handoff + new session) that prevent accumulation from reaching this ceiling.
+
 ### Dimension 2: Context Efficiency
 
 > At any moment, is what's in context what the AI currently needs — and what it doesn't already know?
@@ -271,7 +274,7 @@ Formula: `context_budget_score = always_loaded_tokens / effective_context_window
 | **Map vs Manual** | Is the instruction file an index (pointing to deeper docs) or an encyclopedia (explaining everything itself)? | ~100 line index pointing to details = A, mixed = C, giant single file = F |
 | **Signal-to-Noise** | How much of always-loaded content is actually relevant to the current task? | >80% relevant = A, 50-80% = C, <50% = F |
 | **Timeliness** | Is information injected when needed, or front-loaded? | most loaded on demand = A, mixed = C, all always-loaded = F |
-| **Freshness** | Is there a mechanism to clean up stale information? | automatic cleanup (archive/expire) = A, manual cleanup = C, perpetual accumulation = F |
+| **Freshness** | Is the instruction file a living feedback loop (updated when agents fail), or a static document written once and forgotten? | updated after each agent failure class = A, updated occasionally by humans = C, never updated = F |
 | **Layering** | Are static rules, dynamic state, and reference docs separated into layers? | 3+ clearly separated layers = A, 2 layers = C, all mixed together = F |
 | **Deduplication** | Is the same concept **defined** in multiple places? | no duplicate definitions = A, minor = C, severe = F |
 
@@ -358,6 +361,8 @@ More ceremony = more consistent quality, but also more overhead. Score based on 
 | Criteria | Question | Score |
 |----------|----------|-------|
 | **Enforceability** | Are rules mechanically enforced (lint/hook block) or soft suggestions? | critical rules have hard gate + error with fix instructions = A, hard gate but no fix instructions = B, all soft = F |
+| **Error Remediation** | When a hook/linter blocks the AI, does the error message tell it exactly how to fix the problem? | all block messages include specific fix instructions = A, some do = B, blocks with no guidance = F |
+| **Phase Separation** | Does the system enforce separation between planning (research/design) and execution (writing code)? | explicit plan-then-execute workflow with human checkpoint = A, AI decides when to stop planning = C, no separation = F |
 | **Observability** | Can you tell after the fact whether rules were followed? | has artifact/log that can be verified = A, can only look at code = C, cannot verify = F |
 | **Consistency** | Are there contradictions between rules? | 0 contradictions = A, some but priority can be determined = C, some that cannot be resolved = F |
 | **Proportionality** | Do important rules have strong enforcement while unimportant ones are lighter? | clearly tiered = A, all treated equally = C, important ones actually not enforced = F |
@@ -399,6 +404,12 @@ For each rule in the system, trace its enforcement tool chain:
 
 **Important**: more hard rules is not automatically better. The goal is **important rules have hard enforcement, unimportant ones can be soft**. A system with only 10 hard rules that all cover critical operations = A. 100 hard rules but AI is blocked from doing any work = F (over-enforcement).
 
+**How to assess Error Remediation**:
+A block message that only says "violation detected" forces the AI to guess the fix, often looping. A block message that says "violation detected: do X instead" is a self-correcting system. Check every `exit 2` path in your hooks: does each one print a specific actionable instruction? Example of good remediation: `🚫 Task marked complete without Log entry. Add: - HH:MM {tid} done. What you did. How you verified.` Example of poor remediation: `🚫 BLOCK: validation failed`.
+
+**How to assess Phase Separation**:
+Does the system have a distinct planning phase where a plan is produced and optionally reviewed before any code is written? Signs of good phase separation: explicit plan files (SPEC.md, feature lists), human review checkpoint before execution begins, AI cannot write code until a plan is approved. Signs of absent phase separation: AI switches between planning and coding within the same turn, no artifact captures the plan, no human checkpoint before execution. Quote from Boris Tane (Cloudflare): "Never let an agent write code before you've reviewed and approved a written plan. That separation of planning and execution is the most important thing I do."
+
 ### Dimension 5: Robustness
 
 > Can the system itself break? What happens when it does?
@@ -411,7 +422,7 @@ For each rule in the system, trace its enforcement tool chain:
 | **Empty State** | Does the system work normally when there's nothing (new repo, no SPEC, no DECISION)? | fully normal = A, partial functionality = C, errors or hangs = F |
 | **Mid-Session Change** | If a human changes code/requirements/config mid-session, can the system adapt? | has detection + adjustment mechanism = A, relies on AI judgment = C, will conflict = F |
 | **Repo as Record** | Is all knowledge the AI needs in version-controlled files? | all in repo/config = A, some external (Slack/Docs) = C, critical knowledge not in repo = F |
-| **Entropy Defense** | Is there a mechanism preventing AI from copying bad patterns in the repo? | has golden rules + background scan = A, has lint = B, none = F |
+| **Entropy Defense** | Is there a mechanism preventing AI from copying bad patterns AND periodically cleaning up AI-generated low-quality code? | has lint + structural tests + GC agent for AI slop = A, has lint only = B, none = F |
 | **Dependency Liveness** | Are all referenced components still alive? | 0 dead references = A, some but non-critical = C, critical dependency dead = F |
 
 **How to assess Repo as Record**:
@@ -421,10 +432,19 @@ For each rule in the system, trace its enforcement tool chain:
 3. Does global config (~/.claude/) count as repo? → If there's a versioned harness repo with install/symlink mechanism = yes. If written by hand with no backup = no.
 
 **How to assess Entropy Defense**:
-AI copies patterns already in the repo — including bad patterns.
+Two distinct problems — both need addressing:
+
+**Problem A: AI copies bad patterns** — AI replicates whatever it sees in the repo, including existing bugs and anti-patterns.
 1. Is there lint/structural test protecting invariants? (not just style, but structure: "every API must have an error response")
 2. Is there a background task scanning for drift? ({session hook} detects repeated modifications, stale decisions)
 3. Do lint/hook error messages embed fix instructions so AI can self-correct?
+
+**Problem B: AI-generated slop accumulates** — LLM-generated code tends to reinvent existing functionality, over-engineer simple things, and produce low readability. This accumulates differently from human-written technical debt.
+1. Is there a periodic "garbage collection" agent or task that scans for duplicate implementations, dead code, and over-engineered patterns?
+2. Does cleanup throughput scale proportionally with generation throughput? (If generating 100 LOC/day, cleanup should also run daily, not quarterly)
+3. Are cleanup runs tracked (what was found, what was removed)?
+
+Systems that only address Problem A score B. Systems addressing both score A.
 
 **How to assess Dependency Liveness**:
 1. hooks: grep source/bash calls to other scripts → check they exist and are non-empty
