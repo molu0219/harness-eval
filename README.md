@@ -11,7 +11,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-blueviolet?style=flat-square)](https://claude.ai/code)
 [![npx install](https://img.shields.io/badge/install-npx_skills_add-orange?style=flat-square)](https://www.npmjs.com/package/skills)
 
-A **Claude Code** skill that scores any AI-assisted development configuration across **6 dimensions** and **40+ criteria** — answering not "did it work this time?" but "is this design capable of working well consistently?"
+A **Claude Code** skill that scores any AI-assisted development configuration across **6 dimensions** and **50+ criteria** — answering not "did it work this time?" but "is this design capable of working well consistently?"
 
 ---
 
@@ -139,6 +139,7 @@ Followed by: flow simulation trace · assumption stress test · top 5 prioritize
 | **Boot Sequence** | How many files must be read before the AI can begin actual work? |
 | **Idle Components** | What fraction of hooks run but produce no output in typical usage? |
 | **Resource Guardrails** | Are there mechanisms preventing agents from spending disproportionate time on low-value work? |
+| **Evolvability** | As model capabilities improve, is the harness designed to get thinner? Are components that compensate for model limitations clearly identified so they can be removed when assumptions change? |
 | **Trigger Placement** | Is each check placed at the trigger point closest to where the action occurs? |
 
 ### 4. Adherence — Can the rules actually be followed? Is there enforcement?
@@ -148,6 +149,7 @@ Followed by: flow simulation trace · assumption stress test · top 5 prioritize
 | **Enforceability** | Are critical rules enforced by hard gates (hook block/lint) or soft suggestions? |
 | **Error Remediation** | When a hook blocks the AI, does the message include specific fix instructions? |
 | **Phase Separation** | Is there a distinct planning phase (with human checkpoint) before code is written? |
+| **Incremental Execution** | Does the system enforce one-task-at-a-time execution with checkpoint commits after each? Or can agents attempt to one-shot all features, leading to half-finished code when the context window fills? |
 | **E2E Verification Gate** | Is end-to-end verification required before a task is marked complete? |
 | **Backpressure Design** | Does the system apply both upstream guidance AND downstream rejection? |
 | **Observability** | Can you verify after the fact whether rules were actually followed? |
@@ -179,6 +181,7 @@ Followed by: flow simulation trace · assumption stress test · top 5 prioritize
 | **Autonomy Gradient** | Is there a clear tier of what AI does automatically vs. asks the human (deny/ask/allow)? |
 | **Transparency** | Can the human see what AI is doing via progress tracking and event logs? |
 | **Multi-Agent Design** | Can multiple agents coordinate, with tool permissions scoped to each role? |
+| **Agent Role Specialization** | Are agent roles defined with meaningfully different tool permissions — read-only Research, scoped-write Execution, read-write Cleanup? Does specialization actively reduce context pollution per agent, keeping each in the Smart Zone? |
 | **Agent Observability Access** | Can the AI agent query logs, metrics, and runtime state to self-diagnose? |
 | **Agent Readability** | Does the stack use technology the AI knows well, with per-worktree isolation? |
 | **Failure Analysis** | When something goes wrong, does the system guide "what's missing" rather than "try again"? |

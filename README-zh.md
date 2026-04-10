@@ -11,7 +11,7 @@
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-blueviolet?style=flat-square)](https://claude.ai/code)
 [![npx 安裝](https://img.shields.io/badge/安裝-npx_skills_add-orange?style=flat-square)](https://www.npmjs.com/package/skills)
 
-一個 **Claude Code** skill，跨 **6 個維度**、**40+ 個指標**評估任何 AI 輔助開發配置的設計品質——回答的不是「這次有沒有跑通」，而是「這個設計有沒有能力持續跑好？」
+一個 **Claude Code** skill，跨 **6 個維度**、**50+ 個指標**評估任何 AI 輔助開發配置的設計品質——回答的不是「這次有沒有跑通」，而是「這個設計有沒有能力持續跑好？」
 
 ---
 
@@ -140,6 +140,7 @@ curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL.md
 | **啟動序列** | session 開始到第一行 code，需要讀多少檔案 |
 | **空轉元件** | 有多少 hook 在大多數情況下執行但沒有產出 |
 | **資源護欄** | 有沒有機制防止 agent 在低價值活動上花費不成比例的時間 |
+| **可演化性** | 隨著 model 能力提升，harness 有沒有設計成可以越做越薄？補償 model 限制的元件有沒有被清楚標記，讓假設改變時可以移除？ |
 | **觸發時機** | 每個提醒/檢查有沒有放在最接近動作發生的觸發點 |
 
 ### 4. 遵守度 — 規則實際上能被遵守嗎？有沒有執行機制？
@@ -149,6 +150,7 @@ curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL.md
 | **可執行性** | 關鍵規則是機械化執行（hook block/lint）還是軟建議 |
 | **錯誤修復指引** | hook block 時，訊息有沒有包含具體的修復步驟 |
 | **階段分離** | 有沒有獨立的規劃階段（含人類確認點）在寫 code 之前 |
+| **增量執行** | 系統有沒有強制一次只做一個任務並在完成後 commit checkpoint？還是 agent 可以試圖一次 one-shot 所有功能，context 耗盡後留下半成品？ |
 | **E2E 驗證門檻** | 標完成之前，有沒有要求端到端功能驗證 |
 | **雙向壓力設計** | 系統同時有上游引導（正確模式）和下游阻擋（拒絕錯誤產出）嗎 |
 | **可觀測性** | 事後能不能驗證規則有沒有被遵守 |
@@ -180,6 +182,7 @@ curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL.md
 | **自主梯度** | AI 自動執行 vs 詢問人類的分界有沒有明確分級 |
 | **透明度** | 人類能不能透過進度追蹤和事件 log 看到 AI 在做什麼 |
 | **多 agent 設計** | 多個 agent 能不能協調，每個 agent 的工具權限有沒有限制在其角色範圍 |
+| **Agent 角色專業化** | Agent 角色有沒有定義出有意義的不同工具權限——只讀的 Research、限定寫的 Execution、讀寫的 Cleanup？專業化有沒有實質減少每個 agent 的 context 污染，讓它們保持在 Smart Zone 內？ |
 | **Agent 可觀測性存取** | AI agent 能不能查詢 log、metrics、runtime 狀態來自我診斷 |
 | **Agent 可讀性** | 技術棧用的是 AI 熟悉的技術嗎，能不能按 worktree 隔離 |
 | **失敗分析** | 出問題時，系統引導的是「缺什麼 context/工具/限制」還是「再試一次」 |
