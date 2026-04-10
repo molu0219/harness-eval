@@ -4,12 +4,23 @@ A Claude Code skill for evaluating AI development systems — scores design qual
 
 Works with: Claude Code harness, Cursor rules, Windsurf, Aider, custom CLAUDE.md setups, or any AI-assisted development configuration.
 
+## Language Versions
+
+| File | Language |
+|------|----------|
+| `SKILL.md` | English (primary) |
+| `SKILL-en.md` | English (explicit copy) |
+| `SKILL-zh.md` | Traditional Chinese (繁體中文) |
+
 ## Install
 
 ```bash
-# Add to your Claude Code skills directory
+# Add to your Claude Code skills directory (English)
 mkdir -p ~/.claude/skills/harness-eval
 cp SKILL.md ~/.claude/skills/harness-eval/
+
+# Or install the Traditional Chinese version
+cp SKILL-zh.md ~/.claude/skills/harness-eval/SKILL.md
 ```
 
 Or with the Claude Code skill marketplace, install directly from this repo.

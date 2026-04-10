@@ -15,29 +15,11 @@ Applicable to: Claude Code harness, Cursor rules, Windsurf, Aider, custom CLAUDE
 `/harness-eval <path>` → evaluate a specific system at given path
 `/harness-eval compare <path1> <path2>` → compare two systems
 
-### Evaluation Scope (Critical)
-
-The evaluation must be scoped to the **target system only** — not the entire Claude Code environment.
-
-| Invocation | Scope |
-|------------|-------|
-| `/harness-eval` | Current project directory: `./CLAUDE.md`, `./hooks/`, `./rules/`, `./settings.json`, `./.claude/` |
-| `/harness-eval <path>` | Files strictly within `<path>` only |
-| `/harness-eval compare <p1> <p2>` | Each path independently scoped |
-
-**Global `~/.claude/` files are NOT in scope** unless:
-- The target system IS a harness repo that installs to `~/.claude/` (e.g., via `install.sh` or symlinks), AND
-- You are evaluating the harness as a whole system
-
-In that case, label global-installed components separately as **[shared infrastructure]** vs **[project-level]** in the component list.
-
-> Why this matters: without scoping, `/harness-eval` picks up the user's global CLAUDE.md and rules, which inflates the "always-loaded" token count and conflates multiple systems. You'd be evaluating "the user's entire Claude Code setup" instead of "this specific harness."
-
 ---
 
 ## Step 1: Discover System Components
 
-Read all AI instruction files **within the evaluation scope** (defined in Step 0). Don't assume any specific structure — discover what exists.
+Read all AI instruction files in the target. Don't assume any specific structure — discover what exists.
 
 Look for (in order):
 1. **System prompts / instructions**: CLAUDE.md, .cursorrules, .windsurfrules, .aider*, rules/*.md, any file referenced by AI config
@@ -50,8 +32,6 @@ For each component found, note:
 - **Load timing**: always (every API call), per-session (once), per-event (conditional), on-demand (explicit read)
 - **Size**: bytes
 - **Purpose**: instruction, enforcement, state, reference
-
-If the system installs to a global location (e.g., `~/.claude/`), trace the install mechanism and evaluate the **source files**, not the installed copies.
 
 ---
 
