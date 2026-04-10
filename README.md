@@ -1,52 +1,52 @@
 <div align="right">
 
-[繁體中文](README-zh.md) | **English**
+**繁體中文** | [English](README-en.md)
 
 </div>
 
 # harness-eval
 
-> Evaluate AI development systems by design, not by luck.
+> 用設計評估 AI 開發系統，而不是靠運氣。
 
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-blueviolet?style=flat-square)](https://claude.ai/code)
-[![npx install](https://img.shields.io/badge/install-npx_skills_add-orange?style=flat-square)](https://www.npmjs.com/package/skills)
+[![npx 安裝](https://img.shields.io/badge/安裝-npx_skills_add-orange?style=flat-square)](https://www.npmjs.com/package/skills)
 
-A **Claude Code** skill that scores any AI-assisted development configuration across **6 dimensions** and **50+ criteria** — answering not "did it work this time?" but "is this design capable of working well consistently?"
-
----
-
-## Who this is for
-
-| You are… | Why this helps |
-|----------|----------------|
-| **Adopting Claude Code** for a team | Audit your harness design before rolling out to everyone |
-| **Hitting recurring failures** — context degradation, AI skipping rules, agent loops | Diagnose the root cause in the *design*, not the model |
-| **Authoring a harness** | Verify your setup holds up under real workloads, not just the happy path |
-| **Comparing two setups** | Get objective scores side by side |
-| **After a model upgrade** | Catch stale scaffolding — assumptions that held with old models but no longer do |
+一個 **Claude Code** skill，跨 **6 個維度**、**50+ 個指標**評估任何 AI 輔助開發配置的設計品質——回答的不是「這次有沒有跑通」，而是「這個設計有沒有能力持續跑好？」
 
 ---
 
-## Install
+## 這個 skill 是為誰設計的
+
+| 你的情況 | 為什麼有用 |
+|----------|-----------|
+| **正在讓整個團隊採用 Claude Code** | 在推廣之前，先審計你的 harness 設計 |
+| **遇到重複性的失敗** — context 退化、AI 忽略規則、agent 卡死迴圈 | 從設計層面找根本原因，不是怪 model |
+| **正在開發 harness** | 驗證你的設計在真實工作負載下，而不只是 happy path |
+| **比較兩套方案** | 獲得客觀的量化比較 |
+| **model 升級之後** | 找出過時的 scaffolding——舊假設在新 model 可能已不成立 |
+
+---
+
+## 安裝
 
 ```bash
 npx skills add molu0219/harness-eval
 ```
 
-The [Skills CLI](https://www.npmjs.com/package/skills) auto-detects your AI tool and installs to the right directory.
+[Skills CLI](https://www.npmjs.com/package/skills) 會自動偵測你的 AI 工具，安裝到正確的目錄。
 
 <details>
-<summary>Manual install</summary>
+<summary>手動安裝</summary>
 
 ```bash
 mkdir -p ~/.claude/skills/harness-eval
-curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL.md \
+curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL-zh.md \
   -o ~/.claude/skills/harness-eval/SKILL.md
 ```
 
-For Traditional Chinese:
+英文版：
 ```bash
-curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL-zh.md \
+curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL.md \
   -o ~/.claude/skills/harness-eval/SKILL.md
 ```
 
@@ -54,27 +54,28 @@ curl -fsSL https://raw.githubusercontent.com/molu0219/harness-eval/main/SKILL-zh
 
 ---
 
-## Usage
+## 使用方式
 
-Open Claude Code, then:
+開啟 Claude Code，輸入：
 
 ```
-/harness-eval                    # evaluate current project (project-level only)
-/harness-eval <path>             # evaluate a specific system at given path
-/harness-eval --global           # current project + global ~/.claude/
-/harness-eval <path> --global    # path + global ~/.claude/
-/harness-eval compare <p1> <p2>  # compare two systems side by side
+/harness-eval                    # 評估當前專案（僅限專案層級）
+/harness-eval <path>             # 評估指定路徑的系統
+/harness-eval --global           # 當前專案 + 全域 ~/.claude/
+/harness-eval <path> --global    # 指定路徑 + 全域 ~/.claude/
+/harness-eval compare <p1> <p2>  # 並排比較兩個系統
 ```
 
-### Scope
+### 評估範圍
 
-By default, only **project-level files** are evaluated: `./CLAUDE.md`, `./hooks/`, `./rules/`, `./settings.json`, `./.claude/`
+預設只評估**專案層級的檔案**：`./CLAUDE.md`、`./hooks/`、`./rules/`、`./settings.json`、`./.claude/`
 
-`~/.claude/` is **never included** unless you explicitly pass `--global`. Use `--global` when evaluating a harness repo that deploys to `~/.claude/` and you want to assess the full installed system.
+除非明確加上 `--global`，否則 `~/.claude/` **永遠不在評估範圍內**。
+當你評估一個會安裝到 `~/.claude/` 的 harness repo，想評估完整部署後的系統時，才使用 `--global`。
 
 ---
 
-## Output
+## 輸出範例
 
 ```
 ═══════════════════════════════════════════════════════════
@@ -84,150 +85,150 @@ By default, only **project-level files** are evaluated: `./CLAUDE.md`, `./hooks/
   Total always-loaded: 14,380 bytes (~3,595 tokens)
 ═══════════════════════════════════════════════════════════
 
-┌─────────────────────┬───────┬───────────────────────────────────────┐
-│ Dimension           │ Score │ Key Finding                           │
-├─────────────────────┼───────┼───────────────────────────────────────┤
-│ 1. Endurance        │   B   │ always-loaded 1.8%, no active ceiling │
-│ 2. Context Eff.     │   B   │ good layering, CLAUDE.md too manual   │
-│ 3. Overhead         │   C   │ no resource guardrails on agents      │
-│ 4. Adherence        │   B   │ hard gates work, E2E gate is soft     │
-│ 5. Robustness       │   B   │ error isolation strong, no entropy GC │
-│ 6. Collaboration    │   A   │ autonomy gradient clear               │
-├─────────────────────┼───────┼───────────────────────────────────────┤
-│ OVERALL             │   B   │                                       │
-└─────────────────────┴───────┴───────────────────────────────────────┘
+┌──────────────────────┬───────┬────────────────────────────────────────┐
+│ 維度                 │ 評分  │ 主要發現                               │
+├──────────────────────┼───────┼────────────────────────────────────────┤
+│ 1. 持久力            │   B   │ always-loaded 1.8%，缺 active ceiling  │
+│ 2. Context 效率      │   B   │ 分層設計佳，CLAUDE.md 偏百科型         │
+│ 3. 系統消耗          │   C   │ Agent spawn 缺 timeout 機制            │
+│ 4. 遵守度            │   B   │ hard gate 有效，E2E gate 偏軟          │
+│ 5. 穩健度            │   B   │ 錯誤隔離強，缺 entropy defense         │
+│ 6. 協作品質          │   A   │ 自主梯度清晰                           │
+├──────────────────────┼───────┼────────────────────────────────────────┤
+│ 整體                 │   B   │                                        │
+└──────────────────────┴───────┴────────────────────────────────────────┘
 ```
 
-Followed by: flow simulation trace · assumption stress test · top 5 prioritized recommendations
+後附：開發流程模擬追蹤 · 假設壓力測試結果 · 前 5 項優先改善建議
 
 ---
 
-## The 6 Dimensions
+## 六個評估維度
 
-### 1. Endurance — Can AI sustain effective work across long sessions?
+### 1. 持久力 — AI 能不能在長 session 中持續有效工作？
 
-| Criteria | What it checks |
-|----------|----------------|
-| **Context Budget** | What fraction of the model's context window do always-loaded instructions occupy? |
-| **Active Ceiling** | Does the system prevent active context from filling past the ~40% quality degradation threshold? |
-| **Growth Bound** | Does injected context grow without bound, or is there a cap mechanism? |
-| **Recovery Design** | After a context reset (compact/new session), how much state can the system recover? |
-| **Recovery Chain** | Does each step of the recovery mechanism have an explicit trigger, or does it rely on AI remembering? |
-| **Continuity Design** | When crossing sessions, can work continue via handoff and state files? |
-| **Degradation Curve** | Is quality degradation gradual (tiered lite/full) or a sudden cliff? |
-| **Parallel Context Isolation** | In multi-agent scenarios, does each agent have an isolated context window? Does the orchestrator accumulate unbounded context as it collects worker results, or does it only receive summaries? |
+| 指標 | 評估什麼 |
+|------|---------|
+| **Context 預算** | always-loaded 指令佔 model context window 的比例 |
+| **使用率上限** | 有沒有機制讓 active context 保持在品質退化閾值（~40%）以下 |
+| **增長上限** | 注入的 context 會不會無限增長，還是有上限機制 |
+| **恢復設計** | Context 重置後，系統能恢復多少狀態 |
+| **恢復鏈路** | 恢復機制的每一步有沒有明確觸發器，還是靠 AI 記得執行 |
+| **連續性設計** | 跨 session 時，工作能不能透過 handoff 和狀態檔銜接 |
+| **退化曲線** | 品質退化是漸進的（分級機制）還是懸崖式的 |
+| **並行 Context 隔離** | 多 agent 場景下，每個 agent 有獨立的 context window 嗎？Orchestrator 收集 worker 結果時，會不會無限累積 context，還是只接收摘要？ |
 
-### 2. Context Efficiency — Is what's in context actually what's needed right now?
+### 2. Context 效率 — 現在 context 裡的，是 AI 當下需要的嗎？
 
-| Criteria | What it checks |
-|----------|----------------|
-| **Redundancy** | How much injected information does the AI already know from training or prior context? |
-| **Map vs Manual** | Is the main instruction file a short index, or a giant encyclopedia? |
-| **Signal-to-Noise** | What fraction of always-loaded content is relevant to the current task? |
-| **Timeliness** | Is information injected when needed, or front-loaded regardless of relevance? |
-| **Freshness** | Is the instruction file updated when agents fail, or static since first written? |
-| **Layering** | Are static rules, dynamic state, and reference docs in distinct layers? |
-| **Deduplication** | Is the same concept defined in multiple places? |
-| **Output Signal Control** | Are hook outputs designed for AI consumption — grep-friendly, file-logged, aggregated? |
+| 指標 | 評估什麼 |
+|------|---------|
+| **冗餘度** | 注入的資訊中，有多少是 AI 從訓練資料就已知的 |
+| **目錄型 vs 百科型** | 主指令檔是指向細節的短索引，還是自己講完全部的百科 |
+| **訊雜比** | always-loaded 內容中，有多少和當前任務實際相關 |
+| **及時性** | 資訊是在需要時才注入，還是不管是否相關都提前塞入 |
+| **新鮮度** | 指令檔在 agent 失敗時有沒有更新，還是自從寫完就沒動 |
+| **分層** | 靜態規則、動態狀態、參考文件有沒有分開放 |
+| **去重** | 同一個概念有沒有在多處重複定義 |
+| **輸出訊號控制** | hook/CI 輸出有沒有針對 AI 設計——單行錯誤、寫入 log、聚合統計 |
 
-### 3. Overhead — How much does the system cost vs. what it delivers?
+### 3. 系統消耗 — 系統本身花了多少，換回了多少？
 
-| Criteria | What it checks |
-|----------|----------------|
-| **Fixed Tax** | How many tokens are added to every API call unconditionally? |
-| **Variable Tax** | How many tokens are appended after each human message? |
-| **Ceremony** | How many process steps (not code-writing) are required to complete a task? |
-| **Boot Sequence** | How many files must be read before the AI can begin actual work? |
-| **Idle Components** | What fraction of hooks run but produce no output in typical usage? |
-| **Resource Guardrails** | Are there mechanisms preventing agents from spending disproportionate time on low-value work? |
-| **Evolvability** | As model capabilities improve, is the harness designed to get thinner? Are components that compensate for model limitations clearly identified so they can be removed when assumptions change? |
-| **Trigger Placement** | Is each check placed at the trigger point closest to where the action occurs? |
+| 指標 | 評估什麼 |
+|------|---------|
+| **固定稅** | 每次 API 呼叫無條件加入多少 token |
+| **變動稅** | 每次人類輸入後，系統附加多少 token |
+| **流程儀式** | 正式完成一個任務需要多少「流程步驟」而非「寫 code」 |
+| **啟動序列** | session 開始到第一行 code，需要讀多少檔案 |
+| **空轉元件** | 有多少 hook 在大多數情況下執行但沒有產出 |
+| **資源護欄** | 有沒有機制防止 agent 在低價值活動上花費不成比例的時間 |
+| **可演化性** | 隨著 model 能力提升，harness 有沒有設計成可以越做越薄？補償 model 限制的元件有沒有被清楚標記，讓假設改變時可以移除？ |
+| **觸發時機** | 每個提醒/檢查有沒有放在最接近動作發生的觸發點 |
 
-### 4. Adherence — Can the rules actually be followed? Is there enforcement?
+### 4. 遵守度 — 規則實際上能被遵守嗎？有沒有執行機制？
 
-| Criteria | What it checks |
-|----------|----------------|
-| **Enforceability** | Are critical rules enforced by hard gates (hook block/lint) or soft suggestions? |
-| **Error Remediation** | When a hook blocks the AI, does the message include specific fix instructions? |
-| **Phase Separation** | Is there a distinct planning phase (with human checkpoint) before code is written? |
-| **Incremental Execution** | Does the system enforce one-task-at-a-time execution with checkpoint commits after each? Or can agents attempt to one-shot all features, leading to half-finished code when the context window fills? |
-| **E2E Verification Gate** | Is end-to-end verification required before a task is marked complete? |
-| **Backpressure Design** | Does the system apply both upstream guidance AND downstream rejection? |
-| **Observability** | Can you verify after the fact whether rules were actually followed? |
-| **Consistency** | Are there contradictions between rules? Can priority be determined if so? |
-| **Proportionality** | Do important rules have strong enforcement while unimportant ones are lighter? |
-| **Escape Hatch** | When rules conflict with reality, is there an explicit override or PAUSE mechanism? |
-| **Cross-Reference** | Do instruction file rules match what hooks actually check? |
+| 指標 | 評估什麼 |
+|------|---------|
+| **可執行性** | 關鍵規則是機械化執行（hook block/lint）還是軟建議 |
+| **錯誤修復指引** | hook block 時，訊息有沒有包含具體的修復步驟 |
+| **階段分離** | 有沒有獨立的規劃階段（含人類確認點）在寫 code 之前 |
+| **增量執行** | 系統有沒有強制一次只做一個任務並在完成後 commit checkpoint？還是 agent 可以試圖一次 one-shot 所有功能，context 耗盡後留下半成品？ |
+| **E2E 驗證門檻** | 標完成之前，有沒有要求端到端功能驗證 |
+| **雙向壓力設計** | 系統同時有上游引導（正確模式）和下游阻擋（拒絕錯誤產出）嗎 |
+| **可觀測性** | 事後能不能驗證規則有沒有被遵守 |
+| **一致性** | 規則之間有沒有矛盾，有的話能判斷優先級嗎 |
+| **比例性** | 重要規則有強執行，不重要的有較輕的執行嗎 |
+| **逃生出口** | 規則和現實衝突時，有沒有明確的 override 或 PAUSE 機制 |
+| **交叉驗證** | 指令檔的規則和 hook 實際檢查的是同一件事嗎 |
 
-### 5. Robustness — Does the system break gracefully or catastrophically?
+### 5. 穩健度 — 系統本身壞了會怎樣？
 
-| Criteria | What it checks |
-|----------|----------------|
-| **Graceful Degradation** | If one component fails, do others continue working? |
-| **Error Isolation** | Does one hook erroring interrupt the entire session? |
-| **State Consistency** | How many sources of truth exist, and can they drift out of sync? |
-| **Concurrent Write Safety** | If multiple agents attempt to modify shared state (e.g. SPEC.md) simultaneously, is there isolation or a defined merge protocol? |
-| **Empty State** | Does the system work on a fresh repo with nothing initialized? |
-| **Mid-Session Change** | If a human changes code or requirements mid-session, does the system adapt? |
-| **Repo as Record** | Is all knowledge the AI needs in version-controlled files, not external tools? |
-| **Entropy Defense** | Are there mechanisms preventing AI from copying bad patterns or accumulating low-quality code? |
-| **Dependency Liveness** | Are all files and paths referenced by hooks and instructions still alive? |
-| **State Format Resilience** | Is task state stored in machine-parseable format that resists accidental AI modification? |
+| 指標 | 評估什麼 |
+|------|---------|
+| **優雅降級** | 一個元件壞了，其他還能正常運作嗎 |
+| **錯誤隔離** | 一個 hook 報錯會不會中斷整個 session |
+| **狀態一致性** | 有幾個 source of truth，它們會不會漂移 |
+| **並行寫入安全** | 多個 agent 同時嘗試修改共享狀態（如 SPEC.md）時，有沒有隔離機制或定義好的 merge 協議？ |
+| **空白狀態** | 全新 repo、沒有 SPEC、沒有初始化時，系統能正常工作嗎 |
+| **中途變更** | 人類中途改了 code 或需求，系統能偵測和適應嗎 |
+| **Repo 即記錄** | AI 做決策需要的所有知識都在版控的檔案裡嗎 |
+| **熵防禦** | 有沒有機制防止 AI 複製 repo 中的壞 pattern 或累積低品質 code |
+| **依賴存活性** | hooks 和指令引用的所有檔案和路徑還存在嗎 |
+| **狀態格式韌性** | 任務狀態是用機器可解析的格式（JSON/YAML）儲存，還是容易被 AI 意外修改的 Markdown |
 
-### 6. Collaboration — Is the human-AI interaction well designed?
+### 6. 協作品質 — 人類和 AI 的互動設計得好嗎？
 
-| Criteria | What it checks |
-|----------|----------------|
-| **Right Info at Right Time** | Does the system inject information only when the AI actually needs it? |
-| **Noise Level** | How much system output appears when there is nothing actionable to report? |
-| **Autonomy Gradient** | Is there a clear tier of what AI does automatically vs. asks the human (deny/ask/allow)? |
-| **Transparency** | Can the human see what AI is doing via progress tracking and event logs? |
-| **Multi-Agent Design** | Can multiple agents coordinate, with tool permissions scoped to each role? |
-| **Agent Role Specialization** | Are agent roles defined with meaningfully different tool permissions — read-only Research, scoped-write Execution, read-write Cleanup? Does specialization actively reduce context pollution per agent, keeping each in the Smart Zone? |
-| **Agent Observability Access** | Can the AI agent query logs, metrics, and runtime state to self-diagnose? |
-| **Agent Readability** | Does the stack use technology the AI knows well, with per-worktree isolation? |
-| **Failure Analysis** | When something goes wrong, does the system guide "what's missing" rather than "try again"? |
-| **Config Alignment** | Do permission settings (deny/ask lists) match the prohibited behaviors in instruction files? |
-
----
-
-## Scoring
-
-### Weights
-
-| Dimension | Weight | Rationale |
-|-----------|--------|-----------|
-| Robustness | ×2 | if the system breaks, nothing else matters |
-| Endurance | ×1.5 | determines maximum useful work per session |
-| Adherence | ×1.5 | determines quality of work produced |
-| Context Efficiency | ×1 | |
-| Overhead | ×1 | |
-| Collaboration | ×1 | |
-
-### System archetypes for reference
-
-| Archetype | Endurance | Context Eff. | Overhead | Adherence | Robustness | Collab |
-|-----------|-----------|---------|----------|-----------|------------|--------|
-| Bare (no config) | A | F | A | F | A | F |
-| Single-file CLAUDE.md | B | C | B | D | A | D |
-| Rules-based (.cursorrules) | B | B | B | D | A | C |
-| Hooks-enhanced | C | B | C | B | C | B |
-| Full harness (SPEC + hooks + agents) | D | B | D | A | C | A |
-| Over-engineered | F | D | F | B | D | B |
-
-> The sweet spot depends on project complexity. If Overhead score < Adherence score, you're probably over-engineered.
+| 指標 | 評估什麼 |
+|------|---------|
+| **對的時間給對的資訊** | 系統有沒有只在 AI 需要時才注入資訊 |
+| **噪音水平** | 沒有 actionable 資訊時，系統會輸出多少東西 |
+| **自主梯度** | AI 自動執行 vs 詢問人類的分界有沒有明確分級 |
+| **透明度** | 人類能不能透過進度追蹤和事件 log 看到 AI 在做什麼 |
+| **多 agent 設計** | 多個 agent 能不能協調，每個 agent 的工具權限有沒有限制在其角色範圍 |
+| **Agent 角色專業化** | Agent 角色有沒有定義出有意義的不同工具權限——只讀的 Research、限定寫的 Execution、讀寫的 Cleanup？專業化有沒有實質減少每個 agent 的 context 污染，讓它們保持在 Smart Zone 內？ |
+| **Agent 可觀測性存取** | AI agent 能不能查詢 log、metrics、runtime 狀態來自我診斷 |
+| **Agent 可讀性** | 技術棧用的是 AI 熟悉的技術嗎，能不能按 worktree 隔離 |
+| **失敗分析** | 出問題時，系統引導的是「缺什麼 context/工具/限制」還是「再試一次」 |
+| **設定對齊** | 權限設定（deny/ask 清單）和指令檔的禁止行為一致嗎 |
 
 ---
 
-## Design principles
+## 評分機制
 
-- **Implementation-agnostic** — evaluates design quality, not whether it worked once
-- **Scoped** — evaluates the target system only, not your entire Claude environment
-- **Assumption stress testing** — challenges whether each component's assumption still holds with current models
-- **Flow simulation** — traces token cost through the full lifecycle before scoring
+### 加權
 
-## Known limitations
+| 維度 | 權重 | 理由 |
+|------|------|------|
+| 穩健度 | ×2 | 系統壞了，其他都不重要 |
+| 持久力 | ×1.5 | 決定每個 session 最長能有效工作多久 |
+| 遵守度 | ×1.5 | 決定產出的工作品質 |
+| Context 效率 | ×1 | |
+| 系統消耗 | ×1 | |
+| 協作品質 | ×1 | |
 
-- Functional correctness is out of scope — this evaluates design, not whether AI produces correct code
-- Some criteria assume a relatively clean project structure; results may be less actionable on heavily legacy setups
-- Assumption stress tests are calibrated for current models — re-run after major upgrades
+### 系統典型對照
+
+| 典型 | 持久力 | Context 效率 | 消耗 | 遵守度 | 穩健度 | 協作 |
+|------|--------|---------|------|--------|--------|------|
+| 裸跑（無設定） | A | F | A | F | A | F |
+| 單一 CLAUDE.md | B | C | B | D | A | D |
+| 規則型（.cursorrules） | B | B | B | D | A | C |
+| Hook 強化型 | C | B | C | B | C | B |
+| 完整 harness（SPEC + hooks + agents） | D | B | D | A | C | A |
+| 過度工程 | F | D | F | B | D | B |
+
+> 最佳甜蜜點取決於專案複雜度。如果消耗分數低於遵守度分數，通常表示過度工程了。
+
+---
+
+## 設計原則
+
+- **實作無關** — 評估設計品質，不是它是否跑通過一次
+- **精準範圍** — 只評估目標系統，不是整個 Claude 環境
+- **假設壓力測試** — 挑戰每個元件的假設在當前 model 下是否還成立
+- **流程模擬** — 在評分前先追蹤整個開發週期的 token 消耗
+
+## 已知限制
+
+- 功能正確性不在評估範圍內 — 這個工具評估設計品質，不是 AI 是否產出正確的 code
+- 部分指標假設專案結構相對整潔；在大型 legacy 系統上結果可能較難採取行動
+- 假設壓力測試針對當前世代 model 校準 — model 重大升級後請重新執行
