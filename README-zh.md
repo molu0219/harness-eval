@@ -9,13 +9,9 @@
 > 用設計評估 AI 開發系統，而不是靠運氣。
 
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-blueviolet?style=flat-square)](https://claude.ai/code)
-[![可評估 Cursor](https://img.shields.io/badge/可評估-Cursor_rules-blue?style=flat-square)](https://cursor.sh)
-[![可評估 Windsurf](https://img.shields.io/badge/可評估-Windsurf_rules-teal?style=flat-square)](https://windsurf.ai)
 [![npx 安裝](https://img.shields.io/badge/安裝-npx_skills_add-orange?style=flat-square)](https://www.npmjs.com/package/skills)
 
 一個 **Claude Code** skill，跨 **6 個維度**、**40+ 個指標**評估任何 AI 輔助開發配置的設計品質——回答的不是「這次有沒有跑通」，而是「這個設計有沒有能力持續跑好？」
-
-執行環境：Claude Code — 可評估：Claude Code harness · Cursor rules · Windsurf rules · Aider · CLAUDE.md 設定 · 任何 AI 開發配置
 
 ---
 

@@ -9,13 +9,9 @@
 > Evaluate AI development systems by design, not by luck.
 
 [![Claude Code](https://img.shields.io/badge/Claude_Code-skill-blueviolet?style=flat-square)](https://claude.ai/code)
-[![Evaluates Cursor](https://img.shields.io/badge/evaluates-Cursor_rules-blue?style=flat-square)](https://cursor.sh)
-[![Evaluates Windsurf](https://img.shields.io/badge/evaluates-Windsurf_rules-teal?style=flat-square)](https://windsurf.ai)
 [![npx install](https://img.shields.io/badge/install-npx_skills_add-orange?style=flat-square)](https://www.npmjs.com/package/skills)
 
 A **Claude Code** skill that scores any AI-assisted development configuration across **6 dimensions** and **40+ criteria** — answering not "did it work this time?" but "is this design capable of working well consistently?"
-
-Runs in: Claude Code — Can evaluate: Claude Code harness · Cursor rules · Windsurf rules · Aider · CLAUDE.md setups · any AI dev config
 
 ---
 
