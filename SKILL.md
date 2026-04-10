@@ -277,6 +277,7 @@ Formula: `context_budget_score = always_loaded_tokens / effective_context_window
 | **Freshness** | Is the instruction file a living feedback loop (updated when agents fail), or a static document written once and forgotten? | updated after each agent failure class = A, updated occasionally by humans = C, never updated = F |
 | **Layering** | Are static rules, dynamic state, and reference docs separated into layers? | 3+ clearly separated layers = A, 2 layers = C, all mixed together = F |
 | **Deduplication** | Is the same concept **defined** in multiple places? | no duplicate definitions = A, minor = C, severe = F |
+| **Output Signal Control** | Are hook/CI/tool outputs designed to minimize context noise? | errors single-line + grep-friendly, logs written to file not console, aggregate stats instead of raw dumps = A, mixed = C, verbose raw output to console = F |
 
 **Redundancy is the most important criterion**. All others ask "what was put in"; this one asks "should it be in there at all."
 
@@ -334,6 +335,7 @@ Grep alone will over-count (matches keywords in both definitions and references)
 | **Ceremony** | How many "process steps" (rather than "writing code") are needed to complete a task? | <3 steps = A, 3-5 = C, >5 = F |
 | **Boot Sequence** | How many files must be read at session start before work can begin? | 0-1 file = A, 2-3 = B, 4+ = C, must run commands too = F |
 | **Idle Components** | What fraction of components run but produce no output most of the time? | <20% = A, 20-50% = C, >50% = F |
+| **Resource Guardrails** | Are there mechanisms preventing agents from spending disproportionate time on low-value activities? | has test sampling/timeouts/iteration limits = A, has some caps = C, agent can loop indefinitely = F |
 | **Trigger Placement** | Is each reminder/check placed at the trigger point closest to where the action occurs? | all precise = A, mostly precise = B, some misplaced = C, severely misplaced = F |
 
 **How to assess Trigger Placement**:
@@ -354,6 +356,21 @@ Trace the path from "task done" to "officially done":
 
 More ceremony = more consistent quality, but also more overhead. Score based on whether the ceremony is proportional to the task complexity (one-size-fits-all ceremony = bad).
 
+**How to assess Resource Guardrails**:
+Agents have no sense of time — without constraints, an agent will happily run the full test suite for hours when only 10% of tests were needed. Check:
+1. Are there test sampling/subsampling strategies? (e.g., run 1-10% of tests per agent run, deterministic per agent but random across parallel agents so collective coverage is maintained)
+2. Are there iteration limits on retry loops? (e.g., max 3 attempts before escalating to human)
+3. Are there timeouts on long-running commands?
+4. When the same hook block triggers 3+ times in a row, does the system escalate rather than loop?
+
+**How to assess Output Signal Control**:
+Noisy tool output fills the context window just as much as useful output. Evaluate hook and CI output design:
+1. Error format: single-line `ERROR: [reason] at [location]` (grep-friendly) vs multi-line stack traces dumped to console?
+2. Log destination: written to file (agent can grep when needed) vs all output to console (all consumed immediately)?
+3. Stats: pre-computed aggregates ("3 failures out of 47 tests") vs raw output ("test1 pass\ntest2 pass\n...test47 fail")?
+4. Signal/noise: does output only appear when actionable, or does it always produce output?
+Output designed for AI consumption should be grep-friendly, file-logged, and aggregated. Output designed for human dashboards is often the wrong shape for agent context.
+
 ### Dimension 4: Adherence
 
 > Can the system's rules actually be followed? Is there an enforcement mechanism?
@@ -363,6 +380,8 @@ More ceremony = more consistent quality, but also more overhead. Score based on 
 | **Enforceability** | Are rules mechanically enforced (lint/hook block) or soft suggestions? | critical rules have hard gate + error with fix instructions = A, hard gate but no fix instructions = B, all soft = F |
 | **Error Remediation** | When a hook/linter blocks the AI, does the error message tell it exactly how to fix the problem? | all block messages include specific fix instructions = A, some do = B, blocks with no guidance = F |
 | **Phase Separation** | Does the system enforce separation between planning (research/design) and execution (writing code)? | explicit plan-then-execute workflow with human checkpoint = A, AI decides when to stop planning = C, no separation = F |
+| **E2E Verification Gate** | Does the system require end-to-end functional verification before a task/feature is marked complete — not just "code was written"? | hard gate: E2E test must pass before mark-complete = A, soft reminder to verify = C, code written = done = F |
+| **Backpressure Design** | Does the system apply both upstream (guiding AI toward correct patterns) AND downstream (rejecting incorrect work) pressure? | both upstream (existing patterns, type system, architecture constraints) + downstream (tests, lint, CI, security scans) = A, downstream only = B, neither = F |
 | **Observability** | Can you tell after the fact whether rules were followed? | has artifact/log that can be verified = A, can only look at code = C, cannot verify = F |
 | **Consistency** | Are there contradictions between rules? | 0 contradictions = A, some but priority can be determined = C, some that cannot be resolved = F |
 | **Proportionality** | Do important rules have strong enforcement while unimportant ones are lighter? | clearly tiered = A, all treated equally = C, important ones actually not enforced = F |
@@ -410,6 +429,19 @@ A block message that only says "violation detected" forces the AI to guess the f
 **How to assess Phase Separation**:
 Does the system have a distinct planning phase where a plan is produced and optionally reviewed before any code is written? Signs of good phase separation: explicit plan files (SPEC.md, feature lists), human review checkpoint before execution begins, AI cannot write code until a plan is approved. Signs of absent phase separation: AI switches between planning and coding within the same turn, no artifact captures the plan, no human checkpoint before execution. Quote from Boris Tane (Cloudflare): "Never let an agent write code before you've reviewed and approved a written plan. That separation of planning and execution is the most important thing I do."
 
+**How to assess E2E Verification Gate**:
+"Code written" and "feature working" are different things. Anthropic identified "premature feature completion" as a named failure mode — agents mark tasks done after writing code, without running end-to-end tests. Evaluate:
+1. Is there a hard gate (hook block) preventing mark-complete without running an E2E or integration test?
+2. Or is it a soft reminder (easily ignored)?
+3. Does the system distinguish between unit test pass (logic is correct) vs E2E test pass (feature actually works end-to-end)?
+4. For features without an automated E2E test, does the system require a documented manual verification step?
+
+**How to assess Backpressure Design**:
+Huntley's key insight: a well-designed harness applies pressure from both directions.
+- **Upstream backpressure**: the environment itself guides agents toward correct implementations. Existing code patterns, strong type systems, clear module boundaries, and architecture constraints make the right path the easy path.
+- **Downstream backpressure**: tests, type checkers, linters, build checks, security scanners, and custom validators reject invalid work after the fact.
+Systems with only downstream pressure are reactive — agents write bad code, then get told no. Systems with upstream pressure are proactive — agents are guided toward good code from the start. Evaluate both directions.
+
 ### Dimension 5: Robustness
 
 > Can the system itself break? What happens when it does?
@@ -424,6 +456,7 @@ Does the system have a distinct planning phase where a plan is produced and opti
 | **Repo as Record** | Is all knowledge the AI needs in version-controlled files? | all in repo/config = A, some external (Slack/Docs) = C, critical knowledge not in repo = F |
 | **Entropy Defense** | Is there a mechanism preventing AI from copying bad patterns AND periodically cleaning up AI-generated low-quality code? | has lint + structural tests + GC agent for AI slop = A, has lint only = B, none = F |
 | **Dependency Liveness** | Are all referenced components still alive? | 0 dead references = A, some but non-critical = C, critical dependency dead = F |
+| **State Format Resilience** | Is feature/task state stored in a format that resists accidental AI modification? | structured machine-parseable format (JSON/YAML with schema) = A, semi-structured Markdown = C, free-form text = F |
 
 **How to assess Repo as Record**:
 "Things not in the repository don't exist for the agent" — Anthropic Engineering
@@ -445,6 +478,13 @@ Two distinct problems — both need addressing:
 3. Are cleanup runs tracked (what was found, what was removed)?
 
 Systems that only address Problem A score B. Systems addressing both score A.
+
+**How to assess State Format Resilience**:
+Anthropic's finding: JSON feature state files are more reliable than Markdown because agents are less likely to accidentally modify or overwrite structured data. Evaluate:
+1. Feature list / task state: stored as JSON/YAML with explicit fields (id, status, description, test_steps)? Or as Markdown checkboxes that can be easily clobbered?
+2. Progress files: structured (git log + JSON state) or free-form notes?
+3. Is there schema validation on state files? (If an agent writes malformed state, it's caught before causing downstream failures)
+4. Are state files append-only where possible? (Reduces risk of overwrites)
 
 **How to assess Dependency Liveness**:
 1. hooks: grep source/bash calls to other scripts → check they exist and are non-empty
@@ -470,10 +510,27 @@ Single point of failure (one component failure kills the session) = automatic F.
 | **Noise Level** | How much system output is unnecessary for the human/AI to see? | only outputs when there's actionable info = A, has cache to prevent repetition = B, outputs every time = F |
 | **Autonomy Gradient** | When should it act automatically vs ask the human? | has clear tiers (deny/ask/allow) = A, ambiguous = C, all automatic or all manual = F |
 | **Transparency** | Can the human see what the AI is doing? | has progress tracking + event log = A, has but scattered = C, black box = F |
-| **Multi-Agent Design** | Can multiple AI agents coordinate? | has coordination protocol + conflict resolution = A, simple division of labor = C, not considered = F |
+| **Multi-Agent Design** | Can multiple AI agents coordinate, and does each agent have tool permissions scoped to its role? | coordination protocol + conflict resolution + role-scoped tool permissions = A, coordination but shared permissions = B, not considered = F |
+| **Agent Observability Access** | Can the AI agent query logs, metrics, runtime state, and DOM to self-diagnose issues — not just wait for human intervention? | agent has access to logs/metrics/spans + browser automation tools = A, partial access = C, black box to agent = F |
 | **Agent Readability** | Is the codebase readable to AI? Does the stack use tech AI knows well? | uses "boring" tech (stable APIs, good training coverage) + worktree isolation = A, mixed = C, uses frameworks AI doesn't know well = F |
 | **Failure Analysis** | When something goes wrong, does the system guide "what context/tool/constraint is missing" vs "try again"? | has explicit failure diagnosis flow = A, relies on AI judgment = C, no guidance = F |
 | **Config Alignment** | Are permission settings and behavior instructions consistent? | settings deny/ask fully matches CLAUDE.md prohibited behaviors = A, has differences but no contradiction = B, contradictions exist = F |
+
+**How to assess Multi-Agent Tool Scoping**:
+Specialized agents should not have access to tools they don't need — both for safety and context efficiency. A read-only research agent that accidentally has write access can corrupt state. Check:
+- Research/Explore agent: Read, Grep, Glob only — no Edit/Write/Bash
+- Planning agent: Read + output to plan file — no execution tools
+- Execution agent: Read + limited Write scoped to its task domain
+- Review agent: Read + mark/comment — no code modification
+- Does the system enforce these limits, or rely on the agent's own judgment?
+
+**How to assess Agent Observability Access**:
+There are two distinct observability needs — often conflated:
+1. **Human observability**: can humans see what the AI is doing? (Transparency criterion)
+2. **Agent observability**: can the AI see what the system is doing?
+
+Without agent observability, debugging requires human intervention for every "I see an error but can't investigate." With it, the agent can: query logs to find the root cause, check metrics to validate a fix, capture DOM screenshots to see UI bugs that code alone can't reveal.
+Check: does the system provide agents with MCP tools or shell access to logs, application metrics, and browser automation (e.g., Puppeteer)? Can the agent turn "startup time is slow" into "startup time is 2.3s, which exceeds the 800ms target" by querying actual telemetry?
 
 **How to assess Agent Readability**:
 "Prefer boring technology" — frameworks with stable APIs and good training coverage are easier for AI to use correctly.
@@ -602,3 +659,21 @@ The sweet spot depends on project complexity:
 - Team project, 1-3 months → Hooks-enhanced
 - Complex multi-agent, long-running → Full harness
 - If your overhead score is worse than your adherence score → you're over-engineered
+
+---
+
+## Known Evaluation Limitations
+
+This framework evaluates **harness design quality** — structural and enforcement properties. It has known blind spots:
+
+**1. Functional correctness is not evaluated.**
+This eval can tell you whether the system *enforces* completion gates and *requires* verification. It cannot tell you whether the agent's output is actually functionally correct. Architecture constraints, linting, and CI can all pass while the feature is broken. Böckeler's critique of early harness research applies here too: "functional and behavioral verification is largely absent." The E2E Verification Gate criterion detects whether the *gate exists*, not whether the tests are adequate.
+
+**2. This eval assumes a greenfield or controlled environment.**
+All major published success cases (OpenAI, Anthropic, Stripe, Hashimoto) involve either new projects or clean-room environments. Applying harness engineering to a decade-old codebase with inconsistent patterns, no architecture tests, and poor documentation is a different problem. Scores from this eval applied to brownfield projects will be misleadingly low — a brownfield system needs a *migration path*, not just a design evaluation.
+
+**3. Long-term AI code maintainability is not scored.**
+Whether AI-generated code remains maintainable over 6-12 months is an open question (Brockman, 2025). The Entropy Defense criterion evaluates mechanisms, not outcomes. A system with a GC agent scores A; whether that GC agent actually keeps the codebase maintainable is unverified.
+
+**4. The Assumption Stress Test (Step 1.7) should be re-run after each major model upgrade.**
+Harness components that were necessary with one model generation may be stale scaffolding with the next. Scores from this eval are valid at the time of evaluation; model capability improvements can make high-scoring components redundant.
